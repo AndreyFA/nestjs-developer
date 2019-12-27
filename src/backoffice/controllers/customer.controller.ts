@@ -1,13 +1,24 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseInterceptors, HttpException, HttpStatus } from '@nestjs/common';
 
 import { Customer } from '../models/customer.model';
 import { Result } from '../models/result.model';
 import { ValidatorInterceptor } from 'src/interceptors/validator.interceptor';
-import { CreateCustomerContract } from '../contracts/customer.contracts';
+import { CreateCustomerContract } from '../contracts/customer/create-customer.contract';
 import { CreateCustomerDto } from '../dtos/create-customer-dto';
+import { AccountService } from '../services/account.service';
+import { User } from '../models/user.model';
+import { CustomerService } from '../services/customer.service';
+import { Address } from '../models/address.model';
+import { CreateAddressContract } from '../contracts/customer/create-address.contract';
+import { Pet } from '../models/pet.model';
+import { CreatePetContract } from '../contracts/customer/create-pet.contract';
 
 @Controller('v1/customers')
 export class CustomerController {
+    constructor(
+        private readonly accountService: AccountService,
+        private readonly customerService: CustomerService) { }
+
     @Get()
     get(): Result {
         return new Result(null, true, [], null);
@@ -20,8 +31,57 @@ export class CustomerController {
 
     @Post()
     @UseInterceptors(new ValidatorInterceptor(new CreateCustomerContract()))
-    post(@Body() customer: CreateCustomerDto): Result {
-        return new Result('Cliente cadastrado com sucesso!', true, customer, null);
+    async post(@Body() model: CreateCustomerDto): Promise<Result> {
+        try {
+            const user = await this.accountService.create(new User(model.document, model.password, true));
+            const customer = new Customer(
+                model.name,
+                model.document,
+                model.email,
+                user,
+                [],
+                null,
+                null,
+                null);
+
+            const res = await this.customerService.create(customer);
+            return new Result('Cliente criado com sucesso!', true, res, null);
+        } catch (error) {
+            throw new HttpException(new Result('Ops! Algo deu errado', false, null, error), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Post(':document/addresses/billing')
+    @UseInterceptors(new ValidatorInterceptor(new CreateAddressContract()))
+    async addBillingAddress(@Param('document') document: string, @Body() model: Address): Promise<Result> {
+        try {
+            const res = await this.customerService.addBillingAddress(document, model);
+            return new Result('Endereço atualizado com sucesso!', true, res, null);
+        } catch (error) {
+            throw new HttpException(new Result('Ops! Não foi possível adicionar o endereço de cobrança', false, null, error), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Post(':document/addresses/shipping')
+    @UseInterceptors(new ValidatorInterceptor(new CreateAddressContract()))
+    async addShippingAddress(@Param('document') document: string, @Body() model: Address): Promise<Result> {
+        try {
+            const res = await this.customerService.addShippingAddress(document, model);
+            return new Result('Endereço atualizado com sucesso!', true, res, null);
+        } catch (error) {
+            throw new HttpException(new Result('Ops! Não foi possível adicionar o endereço de entrega', false, null, error), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Post(':document/pets')
+    @UseInterceptors(new ValidatorInterceptor(new CreatePetContract()))
+    async createPet(@Param('document') document: string, @Body() model: Pet): Promise<Result> {
+        try {
+            const res = await this.customerService.createPet(document, model);
+            return new Result('Pet adicionado com sucesso!', true, res, null);
+        } catch (error) {
+            throw new HttpException(new Result('Ops! Não foi possível adicionar o pet', false, null, error), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @Put(':document')
