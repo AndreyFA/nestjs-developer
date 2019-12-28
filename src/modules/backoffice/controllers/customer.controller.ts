@@ -12,18 +12,18 @@ import {
 } from '@nestjs/common';
 
 import { Customer } from '../models/customer.model';
-import { Result } from '../models/result.model';
+import { Result } from 'src/modules/backoffice/models/result.model';
 import { ValidatorInterceptor } from 'src/interceptors/validator.interceptor';
-import { CreateCustomerContract } from '../contracts/customer/create-customer.contract';
-import { CreateCustomerDto } from '../dtos/create-customer.dto';
-import { AccountService } from '../services/account.service';
-import { User } from '../models/user.model';
-import { CustomerService } from '../services/customer.service';
-import { Address } from '../models/address.model';
-import { CreateAddressContract } from '../contracts/customer/create-address.contract';
-import { Pet } from '../models/pet.model';
-import { CreatePetContract } from '../contracts/customer/create-pet.contract';
-import { QueryDto } from '../dtos/query.dto';
+import { CreateCustomerContract } from 'src/modules/backoffice/contracts/customer/create-customer.contract';
+import { CreateCustomerDto } from 'src/modules/backoffice/dtos/create-customer.dto';
+import { AccountService } from 'src/modules/backoffice/services/account.service';
+import { User } from 'src/modules/backoffice/models/user.model';
+import { CustomerService } from 'src/modules/backoffice/services/customer.service';
+import { Address } from 'src/modules/backoffice/models/address.model';
+import { CreateAddressContract } from 'src/modules/backoffice/contracts/customer/create-address.contract';
+import { Pet } from 'src/modules/backoffice/models/pet.model';
+import { CreatePetContract } from 'src/modules/backoffice/contracts/customer/create-pet.contract';
+import { QueryDto } from 'src/modules/backoffice/dtos/query.dto';
 
 @Controller('v1/customers')
 export class CustomerController {
