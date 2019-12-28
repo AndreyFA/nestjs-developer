@@ -6,6 +6,7 @@ import { Customer } from 'src/modules/backoffice/models/customer.model';
 import { Address } from 'src/modules/backoffice/models/address.model';
 import { Pet } from 'src/modules/backoffice/models/pet.model';
 import { QueryDto } from 'src/modules/backoffice/dtos/query.dto';
+import { UpdateCustomerDto } from '../dtos/customer/update-customer.dto';
 
 @Injectable()
 export class CustomerService {
@@ -18,56 +19,8 @@ export class CustomerService {
     return await customer.save();
   }
 
-  async addBillingAddress(document: string, data: Address): Promise<Customer> {
-    const options = { upsert: true };
-
-    return await this.model.findOneAndUpdate(
-      { document },
-      {
-        $set: {
-          billingAddress: data,
-        },
-      },
-      options,
-    );
-  }
-
-  async addShippingAddress(document: string, data: Address): Promise<Customer> {
-    const options = { upsert: true };
-
-    return await this.model.findOneAndUpdate(
-      { document },
-      {
-        $set: {
-          shippingAddress: data,
-        },
-      },
-      options,
-    );
-  }
-
-  async createPet(document: string, data: Pet): Promise<Customer> {
-    const options = { upsert: true, new: true };
-    return await this.model.findOneAndUpdate(
-      { document },
-      {
-        $push: {
-          pets: data,
-        },
-      },
-      options,
-    );
-  }
-
-  async updatePet(document: string, id: string, data: Pet): Promise<Customer> {
-    return await this.model.findOneAndUpdate(
-      { document, 'pets._id': id },
-      {
-        $set: {
-          'pets.$': data,
-        },
-      },
-    );
+  async update(document: string, data: UpdateCustomerDto): Promise<Customer> {
+    return await this.model.findOneAndUpdate({ document }, data);
   }
 
   async findAll(): Promise<Customer[]> {

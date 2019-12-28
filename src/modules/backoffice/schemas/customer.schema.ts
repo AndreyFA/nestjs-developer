@@ -90,7 +90,7 @@ export const CustomerSchema = new mongoose.Schema({
             type: String,
         },
     },
-    card: {
+    creditCard: {
         cardNumber: {
             type: String,
         },

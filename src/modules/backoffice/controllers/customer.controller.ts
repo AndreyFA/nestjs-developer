@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Put,
-  Delete,
   Param,
   Body,
   UseInterceptors,
@@ -11,19 +10,17 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 
-import { Customer } from '../models/customer.model';
+import { Customer } from 'src/modules/backoffice/models/customer.model';
 import { Result } from 'src/modules/backoffice/models/result.model';
 import { ValidatorInterceptor } from 'src/interceptors/validator.interceptor';
 import { CreateCustomerContract } from 'src/modules/backoffice/contracts/customer/create-customer.contract';
-import { CreateCustomerDto } from 'src/modules/backoffice/dtos/create-customer.dto';
+import { CreateCustomerDto } from 'src/modules/backoffice/dtos/customer/create-customer.dto';
 import { AccountService } from 'src/modules/backoffice/services/account.service';
 import { User } from 'src/modules/backoffice/models/user.model';
 import { CustomerService } from 'src/modules/backoffice/services/customer.service';
-import { Address } from 'src/modules/backoffice/models/address.model';
-import { CreateAddressContract } from 'src/modules/backoffice/contracts/customer/create-address.contract';
-import { Pet } from 'src/modules/backoffice/models/pet.model';
-import { CreatePetContract } from 'src/modules/backoffice/contracts/customer/create-pet.contract';
 import { QueryDto } from 'src/modules/backoffice/dtos/query.dto';
+import { UpdateCustomerContract } from 'src/modules/backoffice/contracts/customer/update-customer.contract';
+import { QueryContract } from '../contracts/query.contract';
 
 @Controller('v1/customers')
 export class CustomerController {
@@ -60,83 +57,18 @@ export class CustomerController {
     }
   }
 
-  @Post(':document/addresses/billing')
-  @UseInterceptors(new ValidatorInterceptor(new CreateAddressContract()))
-  async addBillingAddress(
+  @Put(':document')
+  @UseInterceptors(new ValidatorInterceptor(new UpdateCustomerContract()))
+  async put(
     @Param('document') document: string,
-    @Body() model: Address,
+    @Body() model: CreateCustomerDto,
   ): Promise<Result> {
     try {
-      const res = await this.customerService.addBillingAddress(document, model);
-      return new Result('Endereço atualizado com sucesso!', true, res, null);
+      const res = await this.customerService.update(document, model);
+      return new Result('Cliente atualizado com sucesso!', true, res, null);
     } catch (error) {
       throw new HttpException(
-        new Result(
-          'Ops! Não foi possível adicionar o endereço de cobrança',
-          false,
-          null,
-          error,
-        ),
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  @Post(':document/addresses/shipping')
-  @UseInterceptors(new ValidatorInterceptor(new CreateAddressContract()))
-  async addShippingAddress(
-    @Param('document') document: string,
-    @Body() model: Address,
-  ): Promise<Result> {
-    try {
-      const res = await this.customerService.addShippingAddress(
-        document,
-        model,
-      );
-      return new Result('Endereço atualizado com sucesso!', true, res, null);
-    } catch (error) {
-      throw new HttpException(
-        new Result(
-          'Ops! Não foi possível adicionar o endereço de entrega',
-          false,
-          null,
-          error,
-        ),
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  @Post(':document/pets')
-  @UseInterceptors(new ValidatorInterceptor(new CreatePetContract()))
-  async createPet(
-    @Param('document') document: string,
-    @Body() model: Pet,
-  ): Promise<Result> {
-    try {
-      const res = await this.customerService.createPet(document, model);
-      return new Result('Pet adicionado com sucesso!', true, res, null);
-    } catch (error) {
-      throw new HttpException(
-        new Result('Ops! Não foi possível adicionar o pet', false, null, error),
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  @Put(':document/pets/:id')
-  @UseInterceptors(new ValidatorInterceptor(new CreatePetContract()))
-  async updatePet(
-    @Param('document') document: string,
-    @Param('id') id: string,
-    @Body() model: Pet,
-  ): Promise<Result> {
-    try {
-      const res = await this.customerService.updatePet(document, id, model);
-      return new Result('Pet atualizado com sucesso!', true, res, null);
-    } catch (error) {
-      throw new HttpException(
-        new Result('Ops! Não foi possível atualizar o pet', false, null, error),
+        new Result('Ops! Algo deu errado', false, null, error),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -169,6 +101,7 @@ export class CustomerController {
   }
 
   @Post('query')
+  @UseInterceptors(new ValidatorInterceptor(new QueryContract()))
   async query(@Body() model: QueryDto) {
     try {
       const res = await this.customerService.query(model);
