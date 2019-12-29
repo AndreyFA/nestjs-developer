@@ -15,6 +15,10 @@ export class ProductService {
     return await this.productRepository.find();
   }
 
+  async getById(id: number): Promise<Product> {
+    return await this.productRepository.findOne(id);
+  }
+
   async post(product: Product): Promise<void> {
     await this.productRepository.save(product);
   }
