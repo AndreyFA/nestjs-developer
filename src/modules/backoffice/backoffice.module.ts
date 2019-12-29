@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 
 import { CustomerController } from 'src/modules/backoffice/controllers/customer.controller';
 import { CustomerSchema } from 'src/modules/backoffice/schemas/customer.schema';
@@ -12,9 +14,19 @@ import { AddressController } from './controllers/address.controller';
 import { PetController } from './controllers/pet.controller';
 import { CreditCardService } from './services/credit-card.service';
 import { CreditCardController } from './controllers/credit-card.controller';
+import { AuthService } from 'src/shared/services/auth.service';
+import { JwtStrategy } from 'src/shared/strategies/jwt.strategy';
+import { AccountController } from './controllers/account.controller';
 
 @Module({
   imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      secretOrPrivateKey: 'secretKey',
+      signOptions: {
+        expiresIn: 3600,
+      },
+    }),
     MongooseModule.forFeature([
       {
         name: 'Customer',
@@ -31,6 +43,7 @@ import { CreditCardController } from './controllers/credit-card.controller';
     AddressController,
     PetController,
     CreditCardController,
+    AccountController,
   ],
   providers: [
     AccountService,
@@ -38,6 +51,8 @@ import { CreditCardController } from './controllers/credit-card.controller';
     AddressService,
     PetService,
     CreditCardService,
+    AuthService,
+    JwtStrategy,
   ],
 })
 export class BackofficeModule {}
