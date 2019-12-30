@@ -27,14 +27,14 @@ export class CustomerController {
   constructor(
     private readonly accountService: AccountService,
     private readonly customerService: CustomerService,
-  ) {}
+  ) { }
 
   @Post()
   @UseInterceptors(new ValidatorInterceptor(new CreateCustomerContract()))
   async post(@Body() model: CreateCustomerDto): Promise<Result> {
     try {
       const user = await this.accountService.create(
-        new User(model.document, model.password, true),
+        new User(model.document, model.password, true, ['user']),
       );
       const customer = new Customer(
         model.name,

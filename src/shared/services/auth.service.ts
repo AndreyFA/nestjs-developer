@@ -10,10 +10,15 @@ export class AuthService {
   constructor(
     private readonly accountService: AccountService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async createToken() {
-    const user: JwtPayload = { username: 'test@email.com' };
+    const user: JwtPayload = {
+      document: '38226546800',
+      email: 'andrey@email.com',
+      image: 'assets/images/user.png',
+      roles: ['admin'],
+    };
     const accessToken = this.jwtService.sign(user);
     return {
       expiresIn: 3600,
@@ -21,7 +26,8 @@ export class AuthService {
     };
   }
 
-  async validateUser(payload: JwtPayload): Promise<User> {
-    return await this.accountService.findOneByUsername(payload.username);
+  async validateUser(payload: JwtPayload): Promise<any> {
+    return payload;
+    // return await this.accountService.findOneByUsername(payload.document);
   }
 }

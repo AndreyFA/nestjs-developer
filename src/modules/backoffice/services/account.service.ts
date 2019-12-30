@@ -3,17 +3,21 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import { Model } from 'mongoose';
 import { User } from 'src/modules/backoffice/models/user.model';
+import { Customer } from '../models/customer.model';
+import { CustomerService } from './customer.service';
 
 @Injectable()
 export class AccountService {
-  constructor(@InjectModel('User') private readonly model: Model<User>) {}
+  constructor(
+    @InjectModel('User') private readonly model: Model<User>,
+    private readonly customerService: CustomerService) { }
 
   async create(data: User): Promise<User> {
     const user = new this.model(data);
     return await user.save();
   }
 
-  async findOneByUsername(username: string): Promise<User> {
-    return new User(username, '123456789', true);
+  async authenticate(username: string, password: string): Promise<Customer> {
+    return this.customerService.authenticate(username, password);
   }
 }

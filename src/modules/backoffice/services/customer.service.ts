@@ -3,8 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 
 import { Model } from 'mongoose';
 import { Customer } from 'src/modules/backoffice/models/customer.model';
-import { Address } from 'src/modules/backoffice/models/address.model';
-import { Pet } from 'src/modules/backoffice/models/pet.model';
 import { QueryDto } from 'src/modules/backoffice/dtos/query.dto';
 import { UpdateCustomerDto } from '../dtos/customer/update-customer.dto';
 
@@ -12,7 +10,7 @@ import { UpdateCustomerDto } from '../dtos/customer/update-customer.dto';
 export class CustomerService {
   constructor(
     @InjectModel('Customer') private readonly model: Model<Customer>,
-  ) {}
+  ) { }
 
   async create(data: Customer): Promise<Customer> {
     const customer = new this.model(data);
@@ -26,7 +24,17 @@ export class CustomerService {
   async findAll(): Promise<Customer[]> {
     return await this.model
       .find({}, '-password')
+      .populate('user')
       .sort('name')
+      .exec();
+  }
+
+  async authenticate(username: string, password: string): Promise<Customer> {
+    return await this.model
+      .findOne({
+        user: { username },
+      })
+      .populate('user', '-password')
       .exec();
   }
 
