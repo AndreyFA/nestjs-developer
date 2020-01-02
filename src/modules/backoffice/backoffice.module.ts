@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, CacheModule } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
@@ -20,6 +20,7 @@ import { AccountController } from './controllers/account.controller';
 
 @Module({
   imports: [
+    CacheModule.register(),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secretOrPrivateKey: 'secretKey',
@@ -29,13 +30,14 @@ import { AccountController } from './controllers/account.controller';
     }),
     MongooseModule.forFeature([
       {
-        name: 'Customer',
-        schema: CustomerSchema,
-      },
-      {
         name: 'User',
         schema: UserSchema,
       },
+      {
+        name: 'Customer',
+        schema: CustomerSchema,
+      },
+
     ]),
   ],
   controllers: [

@@ -5,11 +5,15 @@ import { Model } from 'mongoose';
 import { Customer } from 'src/modules/backoffice/models/customer.model';
 import { QueryDto } from 'src/modules/backoffice/dtos/query.dto';
 import { UpdateCustomerDto } from '../dtos/customer/update-customer.dto';
+import { User } from '../models/user.model';
+import { ConfigService } from '@nestjs/config';
+import { Md5 } from 'md5-typescript';
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectModel('Customer') private readonly model: Model<Customer>,
+    private readonly configService: ConfigService,
   ) { }
 
   async create(data: Customer): Promise<Customer> {
@@ -30,12 +34,18 @@ export class CustomerService {
   }
 
   async authenticate(username: string, password: string): Promise<Customer> {
-    return await this.model
-      .findOne({
-        user: { username },
-      })
-      .populate('user', '-password')
+    const customer = await this.model
+      .findOne({ document: username })
+      .populate('user')
       .exec();
+
+    const encrypted = Md5.init(`${password}${this.configService.get('SALT_KEY')}`);
+
+    if (!customer || customer.user.password !== encrypted) {
+      return null;
+    }
+
+    return customer;
   }
 
   async find(document: string): Promise<Customer> {

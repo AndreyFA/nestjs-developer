@@ -8,7 +8,10 @@ import {
   UseInterceptors,
   HttpException,
   HttpStatus,
+  CacheInterceptor,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Md5 } from 'md5-typescript';
 
 import { Customer } from 'src/modules/backoffice/models/customer.model';
 import { Result } from 'src/modules/backoffice/models/result.model';
@@ -27,14 +30,22 @@ export class CustomerController {
   constructor(
     private readonly accountService: AccountService,
     private readonly customerService: CustomerService,
+    private readonly configService: ConfigService,
   ) { }
 
   @Post()
   @UseInterceptors(new ValidatorInterceptor(new CreateCustomerContract()))
   async post(@Body() model: CreateCustomerDto): Promise<Result> {
     try {
+      const saltKey = await this.configService.get('SALT_KEY');
+      const password = await Md5.init(`${model.password}${saltKey}`);
+
       const user = await this.accountService.create(
-        new User(model.document, model.password, true, ['user']),
+        new User(
+          model.document,
+          password,
+          true,
+          ['user']),
       );
       const customer = new Customer(
         model.name,
@@ -75,6 +86,7 @@ export class CustomerController {
   }
 
   @Get()
+  @UseInterceptors(CacheInterceptor)
   async getAll(): Promise<Result> {
     try {
       const res = await this.customerService.findAll();

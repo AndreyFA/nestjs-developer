@@ -1,15 +1,23 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { BackofficeModule } from './modules/backoffice/backoffice.module';
 import { StoreModule } from './modules/store/store.module';
+import { MongooseConfigService } from './configurations/services/mongoose-config.service';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      'mongodb+srv://nestjs:nestjs@cursonestjs-mg45a.azure.mongodb.net/test?retryWrites=true&w=majority',
-    ),
+    ConfigModule.forRoot({
+      envFilePath: `.${process.env.NODE_ENV.trim()}.env`,
+      isGlobal: true,
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useClass: MongooseConfigService,
+      inject: [ConfigService],
+    }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: '127.0.0.1',
@@ -26,4 +34,4 @@ import { StoreModule } from './modules/store/store.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

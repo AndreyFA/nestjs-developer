@@ -1,7 +1,5 @@
-import { Controller, Get, UseGuards, Post, Req, UseInterceptors, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
 import { AuthService } from 'src/shared/services/auth.service';
-import { JwtAuthGuard } from 'src/shared/guards/auth.guard';
-import { RoleInterceptor } from 'src/interceptors/role.interceptor';
 import { AccountService } from '../services/account.service';
 import { Authenticate } from '../models/authenticate.model';
 
@@ -27,7 +25,7 @@ export class AccountController {
   }
 
   @Post('reset-password')
-  async resetPassword(@Body() model: any): Promise<any> {
+  async resetPassword(): Promise<any> {
     try {
       return {};
     } catch (error) {
