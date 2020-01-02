@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Md5 } from 'md5-typescript';
+import { ApiTags, ApiResponse } from '@nestjs/swagger';
 
 import { Customer } from 'src/modules/backoffice/models/customer.model';
 import { Result } from 'src/modules/backoffice/models/result.model';
@@ -25,15 +26,21 @@ import { QueryDto } from 'src/modules/backoffice/dtos/query.dto';
 import { UpdateCustomerContract } from 'src/modules/backoffice/contracts/customer/update-customer.contract';
 import { QueryContract } from '../contracts/query.contract';
 
+@ApiTags('petshop')
 @Controller('v1/customers')
 export class CustomerController {
   constructor(
     private readonly accountService: AccountService,
     private readonly customerService: CustomerService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   @Post()
+  @ApiResponse({
+    status: 201,
+    description: 'Indica que o registro foi salvo com sucesso!',
+    type: Result,
+  })
   @UseInterceptors(new ValidatorInterceptor(new CreateCustomerContract()))
   async post(@Body() model: CreateCustomerDto): Promise<Result> {
     try {
@@ -41,11 +48,7 @@ export class CustomerController {
       const password = await Md5.init(`${model.password}${saltKey}`);
 
       const user = await this.accountService.create(
-        new User(
-          model.document,
-          password,
-          true,
-          ['user']),
+        new User(model.document, password, true, ['user']),
       );
       const customer = new Customer(
         model.name,
