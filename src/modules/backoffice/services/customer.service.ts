@@ -5,7 +5,6 @@ import { Model } from 'mongoose';
 import { Customer } from 'src/modules/backoffice/models/customer.model';
 import { QueryDto } from 'src/modules/backoffice/dtos/query.dto';
 import { UpdateCustomerDto } from '../dtos/customer/update-customer.dto';
-import { User } from '../models/user.model';
 import { ConfigService } from '@nestjs/config';
 import { Md5 } from 'md5-typescript';
 
@@ -14,7 +13,7 @@ export class CustomerService {
   constructor(
     @InjectModel('Customer') private readonly model: Model<Customer>,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   async create(data: Customer): Promise<Customer> {
     const customer = new this.model(data);
@@ -39,7 +38,9 @@ export class CustomerService {
       .populate('user')
       .exec();
 
-    const encrypted = Md5.init(`${password}${this.configService.get('SALT_KEY')}`);
+    const encrypted = Md5.init(
+      `${password}${this.configService.get('SALT_KEY')}`,
+    );
 
     if (!customer || customer.user.password !== encrypted) {
       return null;
